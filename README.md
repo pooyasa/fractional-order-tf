@@ -42,3 +42,62 @@ The tool can be accessed by starting two command prompt, navigate to the directo
 
 Open another command prompt, navigate to the directory of your downloaded FOMCONpy source code, then run the following command to start teh Destributed Control Server: 
 - python controlServer.py
+
+# How to use without the GUI
+In certain situations, you may want to use the scripts included in this library without the GUI. Here are some examples on how to do that.
+```
+import fotf
+%matplotlib inline
+import numpy as np
+import matplotlib.pyplot as plt
+import control
+
+import warnings
+warnings.filterwarnings('ignore')
+
+p_coef = 50
+i_coef = 30
+d_coef = 20
+lambda_coef = 0.25
+epsilon_coef = 0.35
+FOPID_TF = fotf.FOTransFunc([d_coef, p_coef, i_coef], [epsilon_coef + lambda_coef, lambda_coef, 0], [1, 0], [lambda_coef, 0], 0) # Fractional Order PID
+G_TF = fotf.FOTransFunc([1], [0], [1, 1, 1], [2, 1, 0], 0) # Sample System
+H_TF = fotf.FOTransFunc([1], [0], [1], [0], 0) # Unit feedback
+SYSTEM_TF = (FOPID_TF * G_TF).feedback(H_TF)
+rmagDb, rangleCalcDeg, w  = SYSTEM_TF.freqresp()
+t = np.arange(0, 7, 0.01)
+y = SYSTEM_TF.step(t = t, plot=False)
+```
+
+Now you can simply draw the plots using matplotlib library:
+```
+plt.rcParams['figure.dpi'] = 200
+rmagDb, rangleCalcDeg, w = SYSTEM_TF.freqresp()
+plt.subplot(2, 1, 1)
+plt.semilogx(w, rmagDb)
+plt.ylabel('Magnitude (Db)')
+plt.title('Orientation Control Bode Plot')
+plt.grid(True, axis='both', which='both')
+plt.subplot(2, 1, 2)
+plt.semilogx(w, rangleCalcDeg,)
+plt.xlabel('Frequency (rad/s)')
+plt.ylabel('Phase (deg)')
+plt.grid(True, axis='both', which='both')
+plt.tight_layout()
+
+plt.subplot(2, 1, 2)
+t = np.arange(0, 7, 0.01)
+y = SYSTEM_TF.step(t = t, plot=False)
+plt.figure()
+plt.plot(t, y)
+plt.title('Step response')
+plt.xlabel('Time [s]')
+plt.ylabel('Amplitude')
+plt.grid()
+plt.tight_layout()
+```
+Here are the outputs:
+![Bode Plot](output.png "Bode Plot")
+![Step Function Output](output2.png "Step Function Output")
+
+Note that there are some considerations. For instance, you need to give all the numerator and denominator coefficients in a decreasing order. Plus, you cannot give float values out of the [0,1] range. Finally, you may need to provide coefficients even for powers of s that don't exist (obviously as 0).
