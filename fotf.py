@@ -307,7 +307,7 @@ class FOTransFunc(LTI):
 
                     if nonzero is None:
                         # The array is all zeros.
-                        data[p][i][j] = zeros(1)
+                        data[p][i][j] = np.zeros(1)
                     else:
                         # Truncate the trivial coefficients.
                         data[p][i][j] = data[p][i][j][nonzero:]
@@ -326,7 +326,7 @@ class FOTransFunc(LTI):
 
                     if nonzero is None:
                         # The array is all zeros.
-                        data[p][i][j] = zeros(1)
+                        data[p][i][j] = np.zeros(1)
                     else:
                         # Truncate the trivial coefficients.
                         data[p][i][j] = data[p][i][j][nonzero:]
@@ -350,15 +350,14 @@ class FOTransFunc(LTI):
             else:
                 MIN_COMM_ORDER = self.MIN_COMM_ORDER
 
-            comm_factor = round(MIN_COMM_ORDER ** -1)
+            comm_factor = np.round(MIN_COMM_ORDER ** -1)
             if isinstance(self, FOTransFunc):
                 b = self.den[0][0]
                 nb = self.nden[0][0]
                 nb1 = nb * comm_factor
                 q = comm_order(self, 'den')
                 newnb = np.array(nb1 / (comm_factor * q), dtype=np.int32)
-
-                c = zeros(max(newnb) + 1)
+                c = np.zeros(max(newnb) + 1)
                 c[newnb] = b
                 c = np.flip(c)
                 p = np.roots(c)
@@ -427,8 +426,7 @@ class FOTransFunc(LTI):
                 var = 's'
             else:
                 var = 's' # var='z'
-        outstr = ""
-
+        outstr = ""      
         for i in range(self.inputs):
             for j in range(self.outputs):
                 if mimo:
@@ -878,7 +876,7 @@ class FOTransFunc(LTI):
         _num, _nnum, _den, _nden, _dt = fotfparam(self)
         jj = 1j
         lenW = w.size
-        r = zeros(lenW, dtype=complex)
+        r = np.zeros(lenW, dtype=complex)
         for k in range(lenW):
             bb = np.power((jj * w[k]), _nnum)
             aa = np.power((jj * w[k]), _nden)
@@ -889,7 +887,7 @@ class FOTransFunc(LTI):
         # Delay
         if self.dt > 0:
             for k2 in range(lenW):
-                r[k2] *= np.exp(-jj * w(k2) * self.dt)
+                r[k2] *= np.exp(-jj * w[k2] * self.dt)
 
         rangle = unwrap(np.angle(r))
         rangleCalcDeg = np.rad2deg(rangle)
@@ -900,21 +898,21 @@ class FOTransFunc(LTI):
         # rmagDb, rangledeg, w = bode(H1, w, dB=True, Plot=True, deg=True)
         # plt.show()
 
-        plt.figure(dpi=128)
-        #plt.figure(1)
-        plt.subplot(2, 1, 1)
-        plt.semilogx(w, rmagDb, 'g-')
-        plt.ylabel('Magnitude (Db)')
-        plt.title('Bode Plot')
-        plt.grid(True, axis='both', which='both')
+        # plt.figure(dpi=128)
+        # #plt.figure(1)
+        # plt.subplot(2, 1, 1)
+        # plt.semilogx(w, rmagDb, 'g-')
+        # plt.ylabel('Magnitude (Db)')
+        # plt.title('Bode Plot')
+        # plt.grid(True, axis='both', which='both')
 
-        plt.subplot(2, 1, 2)
-        plt.semilogx(w, rangleCalcDeg, 'g-')
-        plt.xlabel('Frequency (rad/s)')
-        plt.ylabel('Phase (deg)')
-        plt.grid(True, axis='both', which='both')
-        plt.tight_layout()
-        plt.show()
+        # plt.subplot(2, 1, 2)
+        # plt.semilogx(w, rangleCalcDeg, 'g-')
+        # plt.xlabel('Frequency (rad/s)')
+        # plt.ylabel('Phase (deg)')
+        # plt.grid(True, axis='both', which='both')
+        # plt.tight_layout()
+        # plt.show()
 
         return [rmagDb, rangleCalcDeg, w]
 
@@ -932,7 +930,7 @@ class FOTransFunc(LTI):
             nb1 = nb * comm_factor
             q = comm_order(self, 'den')
             newnb = np.array(nb1 / (comm_factor * q), dtype=np.int32)
-            c = zeros(newnb[0] + 1)
+            c = np.zeros(newnb[0] + 1)
             c[newnb] = b
             cslice = c[::-1]
             p = roots(cslice)
@@ -957,7 +955,7 @@ class FOTransFunc(LTI):
             na1 = na * comm_factor
             q = comm_order(self, 'den')
             newna = np.array(na1 / (comm_factor * q), dtype=np.int32)
-            c = zeros(newna[0] + 1)
+            c = np.zeros(newna[0] + 1)
             c[newna] = a
             cslice = c[::-1]
             p = roots(cslice)
@@ -1231,8 +1229,8 @@ class FOTransFunc(LTI):
         N = len(coeffs) - 1
 
         for k, coef in enumerate(coeffs):
-            coef = round(coef, self.numberOfDecimal)
-            pow = round(powcoeffs[k], self.numberOfDecimal)
+            coef = np.round(coef, self.numberOfDecimal)
+            pow = np.round(powcoeffs[k], self.numberOfDecimal)
             if coef== 0:
                 continue
             if k == 0: #check if its the first term or not to add the plus
@@ -1694,7 +1692,7 @@ def _clean_part(data):
     for i in range(len(data)):
         for j in range(len(data[i])):
             for k in range(len(data[i][j])):
-                if isinstance(data[i][j][k], (int, np.int)):
+                if isinstance(data[i][j][k], (int, np.int32)):
                     data[i][j][k] = float(data[i][j][k])
 
     return data
@@ -1805,7 +1803,7 @@ def lsim(G, u, t, plot = False):
     rnT= range(sizeT)
     vec = np.append(nden,nnum)
     d1 = num / detlaT**nnum
-    y1 = zeros(sizeT)
+    y1 = np.zeros(sizeT)
     W = np.ones((sizeT,vec.size))
     for j in rnT[1:]:
         W[j] = W[j-1]*(1-(vec+1)/j)
@@ -1821,7 +1819,7 @@ def lsim(G, u, t, plot = False):
         aaa = u[i] - np.sum(aden * (den / (detlaT ** nden)))    #the brackets are important
         y1[i] = aaa/dsum
 
-    y = zeros(sizeT)
+    y = np.zeros(sizeT)
     for i in rnT[1:]:
         bbb = W[0:i+1,sizeden:]
         bcc = bbb @ d1
@@ -1836,7 +1834,7 @@ def lsim(G, u, t, plot = False):
         # There is a possibility that the value of the sampling interval
         # is greater or equal to the delay. In this case we disregard it.
         if ii != None:
-            lz = zeros(ii[0][0])
+            lz = np.zeros(ii[0][0])
             ystrip= y[:(ysize - lz.size)]
             y = np.concatenate([lz,ystrip]) # check that y is a column vector also
 
